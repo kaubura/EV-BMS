@@ -126,15 +126,79 @@ algorithms_results = {
 }
 
 @app.route('/algo',methods=['GET','POST'])
+# def algo():
+    # selected_algorithm = None
+    # r2_score_value = None
+
+    # if request.method == 'POST':
+    #     selected_algorithm = request.form.get('algorithm')
+    #     r2_score_value = algorithms_results[selected_algorithm]['r2_score']
+    # return render_template('algo.html', algorithms=algorithms_results.keys(), selected_algorithm=selected_algorithm, r2_score_value=r2_score_value)
 def algo():
     selected_algorithm = None
     r2_score_value = None
+    mse_value = None
+    mae_value = None
+
+    df = pd.read_excel('Arranged_TripA01.xlsx')
+    features = [
+        'Battery Voltage [V]',
+        'Battery Current [A]',
+        'Battery Temperature [°C]',
+        'max. Battery Temperature [°C]',
+        'displayed SoC [%]',
+        'min. SoC [%]',
+        'max. SoC [%)'
+    ]
+    target = 'SoC [%]'
+
+    X = df[features]
+    y = df[target]
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    scaler = MinMaxScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
     if request.method == 'POST':
         selected_algorithm = request.form.get('algorithm')
-        r2_score_value = algorithms_results[selected_algorithm]['r2_score']
-    return render_template('algo.html', algorithms=algorithms_results.keys(), selected_algorithm=selected_algorithm, r2_score_value=r2_score_value)
 
+        # if selected_algorithm == 'Random Forest':
+        #     model = RandomForestRegressor()
+        #     model.fit(X_train_scaled, y_train)
+        #     y_pred = model.predict(X_test_scaled)
+
+        #     r2_score_value = round(r2_score(y_test, y_pred), 5)
+        #     mse_value = round(mean_squared_error(y_test, y_pred), 5)
+        #     mae_value = round(mean_absolute_error(y_test, y_pred), 5)
+
+        # else:
+            # Use static values from original dictionary
+        static_results = {
+                'CNN': {'r2_score': 0.83497, 'mse': 0.46803, 'mae': 0.40727},
+                'SVR': {'r2_score': 0.99599, 'mse': 0.08241, 'mae': 0.00987},
+                'FNN': {'r2_score': 0.86475, 'mse': 1.64336, 'mae': 0.33411},
+                'RBF_SVR': {'r2_score': 0.99599, 'mse': 0.08241, 'mae': 0.09878},
+                'Random Forest': {'r2_score': 0.99734,'mse': 0.04976, 'mae': 0.00655},
+                'XGBoost': {'r2_score': 0.99736, 'mse': 0.05608, 'mae': 0.00649},
+                'LSTM': {'r2_score': 0.99986, 'mse': 2.24043, 'mae': 0.00268},
+                'DNN': {'r2_score': 0.99931, 'mse': 0.00011, 'mae': 0.00784}
+            }
+        result = static_results.get(selected_algorithm, {})
+        r2_score_value = result.get('r2_score')
+        mse_value = result.get('mse')
+        mae_value = result.get('mae')
+
+    algorithms = ['CNN', 'SVR', 'FNN', 'RBF_SVR', 'Random Forest', 'XGBoost', 'LSTM', 'DNN']
+
+    return render_template(
+        'algo.html',
+        algorithms=algorithms,
+        selected_algorithm=selected_algorithm,
+        r2_score_value=r2_score_value,
+        mse_value=mse_value,
+        mae_value=mae_value
+    )
 
 
 
