@@ -10,6 +10,9 @@ import pandas as pd
 import json
 import matplotlib.pyplot as plt
 import os
+import matplotlib
+matplotlib.use('Agg')
+
 
 import mysql.connector
 mydb = mysql.connector.connect(
@@ -197,34 +200,51 @@ def algo():
     algorithms = ['CNN', 'SVR', 'FNN', 'RBF_SVR', 'Random Forest', 'XGBoost', 'LSTM', 'DNN']
 
   # Generate line plot
-    fig, ax = plt.subplots(figsize=(8, 4))
-    ax.plot([a for a, _ in train_comparison], label='Train Actual', marker='o')
-    ax.plot([p for _, p in train_comparison], label='Train Predicted', marker='x')
-    ax.plot([a for a, _ in test_comparison], label='Test Actual', marker='o')
-    ax.plot([p for _, p in test_comparison], label='Test Predicted', marker='x')
-    ax.set_title('Actual vs Predicted SoC')
-    ax.set_xlabel('Sample Index')
-    ax.set_ylabel('State of Charge (SoC)')
-    ax.legend()
-    ax.grid(True)
+# --- Train Graph ---
+    fig1, ax1 = plt.subplots(figsize=(8, 4))
+    ax1.plot([a for a, _ in train_comparison], label='Train Actual', marker='o')
+    ax1.plot([p for _, p in train_comparison], label='Train Predicted', marker='x')
+    ax1.set_title('Training Data: Actual vs Predicted SoC')
+    ax1.set_xlabel('Sample Index')
+    ax1.set_ylabel('State of Charge (SoC)')
+    ax1.legend()
+    ax1.grid(True)
 
-    # Save to static/images/
-    chart_filename = f'static/images/{selected_algorithm}_comparison.png'
+    train_chart_filename = f'static/images/{selected_algorithm}_train_comparison.png'
     plt.tight_layout()
-    plt.savefig(chart_filename)
-    plt.close()
+    fig1.savefig(train_chart_filename)
+    plt.close(fig1)
+
+# --- Test Graph ---
+    fig2, ax2 = plt.subplots(figsize=(8, 4))
+    ax2.plot([a for a, _ in test_comparison], label='Test Actual', marker='o')
+    ax2.plot([p for _, p in test_comparison], label='Test Predicted', marker='x')
+    ax2.set_title('Testing Data: Actual vs Predicted SoC')
+    ax2.set_xlabel('Sample Index')
+    ax2.set_ylabel('State of Charge (SoC)')
+    ax2.legend()
+    ax2.grid(True)
+
+    test_chart_filename = f'static/images/{selected_algorithm}_test_comparison.png'
+    plt.tight_layout()
+    fig2.savefig(test_chart_filename)
+    plt.close(fig2)
+
+
     
     return render_template(
-       'algo.html',
-        algorithms=algorithms_results.keys(), 
-        selected_algorithm=selected_algorithm,
-        r2_score_value=r2_score_value,
-        mse_value=mse_value,
-        mae_value=mae_value,
-        train_comparison=train_comparison,
-        test_comparison=test_comparison,
-        chart_file=chart_filename
-    )
+    'algo.html',
+    algorithms=algorithms_results.keys(),
+    selected_algorithm=selected_algorithm,
+    r2_score_value=r2_score_value,
+    mse_value=mse_value,
+    mae_value=mae_value,
+    train_comparison=train_comparison,
+    test_comparison=test_comparison,
+    train_chart_file=train_chart_filename,
+    test_chart_file=test_chart_filename
+)
+
 
 
 

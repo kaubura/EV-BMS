@@ -99,7 +99,7 @@
     <li class="list-group-item"><strong>Mean Absolute Error (MAE):</strong> {{ mae_value }}</li>
   </ul>
 
-  <h4 class="text-success">Training Data: Actual vs Predicted</h4>
+  <!-- <h4 class="text-success">Training Data: Actual vs Predicted</h4>
   <table class="table table-striped table-sm">
     <thead><tr><th>Actual</th><th>Predicted</th></tr></thead>
     <tbody>
@@ -117,16 +117,19 @@
         <tr><td>{{ actual | round(2) }}</td><td>{{ predicted | round(2) }}</td></tr>
       {% endfor %}
     </tbody>
-  </table>
+  </table> -->
 {% endif %}
-{% if chart_file %}
-  <h4 class="mt-4 text-center">Visual Comparison: Actual vs Predicted</h4>
+{% if train_chart_file and test_chart_file %}
+  <h4 class="mt-4 text-center"><u>Visual Comparison</u></h4>
   <div class="text-center">
-    <img src="{{ url_for('static', filename='images/' + selected_algorithm + '_comparison.png') }}" 
-         alt="Comparison Chart" 
-         class="img-fluid rounded shadow" style="max-width: 700px;" />
+    <h3>Training Data: Actual vs Predicted</h3>
+    <img src="{{ url_for('static', filename='images/CNN_train_comparison.png') }}" alt="Training Comparison Graph" class="img-fluid">
+
+    <h3>Testing Data: Actual vs Predicted</h3>
+    <img src="{{ url_for('static', filename='images/CNN_test_comparison.png') }}" alt="Testing Comparison Graph" class="img-fluid">
   </div>
 {% endif %}
+
 </div>
     </div>
 
