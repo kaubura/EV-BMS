@@ -7,7 +7,9 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.losses import MeanSquaredError
 app = Flask(__name__)
 import pandas as pd
-
+import json
+import matplotlib.pyplot as plt
+import os
 
 import mysql.connector
 mydb = mysql.connector.connect(
@@ -125,6 +127,7 @@ algorithms_results = {
     'DNN': {'r2_score': 0.81}
 }
 
+
 @app.route('/algo',methods=['GET','POST'])
 # def algo():
     # selected_algorithm = None
@@ -139,8 +142,11 @@ def algo():
     r2_score_value = None
     mse_value = None
     mae_value = None
-
+    train_comparison = []
+    test_comparison = []
     df = pd.read_excel('Arranged_TripA01.xlsx')
+    chart_filename = None
+
     features = [
         'Battery Voltage [V]',
         'Battery Current [A]',
@@ -163,15 +169,14 @@ def algo():
     if request.method == 'POST':
         selected_algorithm = request.form.get('algorithm')
 
-        # if selected_algorithm == 'Random Forest':
-        #     model = RandomForestRegressor()
-        #     model.fit(X_train_scaled, y_train)
-        #     y_pred = model.predict(X_test_scaled)
-
-        #     r2_score_value = round(r2_score(y_test, y_pred), 5)
-        #     mse_value = round(mean_squared_error(y_test, y_pred), 5)
-        #     mae_value = round(mean_absolute_error(y_test, y_pred), 5)
-
+        if selected_algorithm == 'CNN':
+            with open('../backend/cnn_output.json') as f:
+                result = json.load(f)
+                r2_score_value = result['r2_score']
+                mse_value = result['mse']
+                mae_value = result['mae']
+                train_comparison = result['train']
+                test_comparison = result['test']
         # else:
             # Use static values from original dictionary
         static_results = {
@@ -191,14 +196,36 @@ def algo():
 
     algorithms = ['CNN', 'SVR', 'FNN', 'RBF_SVR', 'Random Forest', 'XGBoost', 'LSTM', 'DNN']
 
+  # Generate line plot
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.plot([a for a, _ in train_comparison], label='Train Actual', marker='o')
+    ax.plot([p for _, p in train_comparison], label='Train Predicted', marker='x')
+    ax.plot([a for a, _ in test_comparison], label='Test Actual', marker='o')
+    ax.plot([p for _, p in test_comparison], label='Test Predicted', marker='x')
+    ax.set_title('Actual vs Predicted SoC')
+    ax.set_xlabel('Sample Index')
+    ax.set_ylabel('State of Charge (SoC)')
+    ax.legend()
+    ax.grid(True)
+
+    # Save to static/images/
+    chart_filename = f'static/images/{selected_algorithm}_comparison.png'
+    plt.tight_layout()
+    plt.savefig(chart_filename)
+    plt.close()
+    
     return render_template(
-        'algo.html',
-        algorithms=algorithms,
+       'algo.html',
+        algorithms=algorithms_results.keys(), 
         selected_algorithm=selected_algorithm,
         r2_score_value=r2_score_value,
         mse_value=mse_value,
-        mae_value=mae_value
+        mae_value=mae_value,
+        train_comparison=train_comparison,
+        test_comparison=test_comparison,
+        chart_file=chart_filename
     )
+
 
 
 

@@ -90,6 +90,44 @@
     <p id="mape"><strong>Mean Absolute Percentage Error (MAPE):</strong> {{ (mae_value * 100)|round(2) }}%</p>
 </div>
 {% endif %}
+<div>
+    {% if selected_algorithm %}
+  <h3 class="mt-4 text-primary">Performance Metrics: {{ selected_algorithm }}</h3>
+  <ul class="list-group mb-4">
+    <li class="list-group-item"><strong>R² Score:</strong> {{ r2_score_value }}</li>
+    <li class="list-group-item"><strong>Mean Squared Error (MSE):</strong> {{ mse_value }}</li>
+    <li class="list-group-item"><strong>Mean Absolute Error (MAE):</strong> {{ mae_value }}</li>
+  </ul>
+
+  <h4 class="text-success">Training Data: Actual vs Predicted</h4>
+  <table class="table table-striped table-sm">
+    <thead><tr><th>Actual</th><th>Predicted</th></tr></thead>
+    <tbody>
+      {% for actual, predicted in train_comparison %}
+        <tr><td>{{ actual | round(2) }}</td><td>{{ predicted | round(2) }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h4 class="text-info">Testing Data: Actual vs Predicted</h4>
+  <table class="table table-striped table-sm">
+    <thead><tr><th>Actual</th><th>Predicted</th></tr></thead>
+    <tbody>
+      {% for actual, predicted in test_comparison %}
+        <tr><td>{{ actual | round(2) }}</td><td>{{ predicted | round(2) }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% if chart_file %}
+  <h4 class="mt-4 text-center">Visual Comparison: Actual vs Predicted</h4>
+  <div class="text-center">
+    <img src="{{ url_for('static', filename='images/' + selected_algorithm + '_comparison.png') }}" 
+         alt="Comparison Chart" 
+         class="img-fluid rounded shadow" style="max-width: 700px;" />
+  </div>
+{% endif %}
+</div>
     </div>
 
 </body>
