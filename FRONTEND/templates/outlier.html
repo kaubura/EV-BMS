@@ -1,4 +1,5 @@
 {% extends 'index.html' %}
+
 {% block content %}
 <div class="container-fluid sticky-top bg-dark bg-light-radial shadow-sm px-5 pe-lg-0">
   <nav class="navbar navbar-expand-lg bg-dark bg-light-radial navbar-dark py-3 py-lg-0">
@@ -47,4 +48,8 @@
   </div>
   {% endfor %}
 </div>
+{% endblock %}
+
+{% block a %}
+<!-- Empty override block to prevent inherited content from index.html -->
 {% endblock %}
