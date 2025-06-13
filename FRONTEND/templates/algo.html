@@ -123,10 +123,9 @@
   <h4 class="mt-4 text-center"><u>Visual Comparison</u></h4>
   <div class="text-center">
     <h3>Training Data: Actual vs Predicted</h3>
-    <img src="{{ url_for('static', filename='images/CNN_train_comparison.png') }}" alt="Training Comparison Graph" class="img-fluid">
-
+    <img src="{{ url_for('static', filename='images/' + selected_algorithm + '_train_comparison.png') }}" alt="Training Comparison Graph" class="img-fluid">
     <h3>Testing Data: Actual vs Predicted</h3>
-    <img src="{{ url_for('static', filename='images/CNN_test_comparison.png') }}" alt="Testing Comparison Graph" class="img-fluid">
+    <img src="{{ url_for('static', filename='images/' + selected_algorithm + '_test_comparison.png') }}" alt="Testing Comparison Graph" class="img-fluid">
   </div>
 {% endif %}
 

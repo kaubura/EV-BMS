@@ -131,119 +131,122 @@ algorithms_results = {
 }
 
 
-@app.route('/algo',methods=['GET','POST'])
-# def algo():
-    # selected_algorithm = None
-    # r2_score_value = None
-
-    # if request.method == 'POST':
-    #     selected_algorithm = request.form.get('algorithm')
-    #     r2_score_value = algorithms_results[selected_algorithm]['r2_score']
-    # return render_template('algo.html', algorithms=algorithms_results.keys(), selected_algorithm=selected_algorithm, r2_score_value=r2_score_value)
+@app.route('/algo', methods=['GET', 'POST'])
 def algo():
+    import time
+
     selected_algorithm = None
     r2_score_value = None
     mse_value = None
     mae_value = None
     train_comparison = []
     test_comparison = []
-    df = pd.read_excel('Arranged_TripA01.xlsx')
-    chart_filename = None
+    train_chart_file = None
+    test_chart_file = None
 
-    features = [
-        'Battery Voltage [V]',
-        'Battery Current [A]',
-        'Battery Temperature [°C]',
-        'max. Battery Temperature [°C]',
-        'displayed SoC [%]',
-        'min. SoC [%]',
-        'max. SoC [%)'
-    ]
-    target = 'SoC [%]'
+    # Available algorithms
+    algorithms = ['CNN', 'SVR', 'FNN', 'RBF_SVR', 'Random Forest', 'XGBoost', 'LSTM', 'DNN']
 
-    X = df[features]
-    y = df[target]
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    scaler = MinMaxScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    # For fallback
+    static_results = {
+        'CNN': {'r2_score': 0.83497, 'mse': 0.46803, 'mae': 0.40727},
+        'SVR': {'r2_score': 0.99599, 'mse': 0.08241, 'mae': 0.00987},
+        'FNN': {'r2_score': 0.86475, 'mse': 1.64336, 'mae': 0.33411},
+        'RBF_SVR': {'r2_score': 0.99599, 'mse': 0.08241, 'mae': 0.09878},
+        'Random Forest': {'r2_score': 0.99734,'mse': 0.04976, 'mae': 0.00655},
+        'XGBoost': {'r2_score': 0.99736, 'mse': 0.05608, 'mae': 0.00649},
+        'LSTM': {'r2_score': 0.99986, 'mse': 2.24043, 'mae': 0.00268},
+        'DNN': {'r2_score': 0.99931, 'mse': 0.00011, 'mae': 0.00784}
+    }
 
     if request.method == 'POST':
         selected_algorithm = request.form.get('algorithm')
 
-        if selected_algorithm == 'CNN':
-            with open('../backend/cnn_output.json') as f:
+        # File-safe mapping
+        file_map = {
+            'CNN': 'cnn',
+            'SVR': 'svr',
+            'FNN': 'fnn',
+            'RBF_SVR': 'rbf_svr',
+            'Random Forest': 'random_forest',
+            'XGBoost': 'xgboost',
+            'LSTM': 'lstm',
+            'DNN': 'dnn'
+        }
+
+        file_key = file_map.get(selected_algorithm)
+
+        # Try loading JSON result
+        result_path = f'static/results/{file_key}_output.json'
+        if os.path.exists(result_path):
+            with open(result_path) as f:
                 result = json.load(f)
-                r2_score_value = result['r2_score']
-                mse_value = result['mse']
-                mae_value = result['mae']
-                train_comparison = result['train']
-                test_comparison = result['test']
-        # else:
-            # Use static values from original dictionary
-        static_results = {
-                'CNN': {'r2_score': 0.83497, 'mse': 0.46803, 'mae': 0.40727},
-                'SVR': {'r2_score': 0.99599, 'mse': 0.08241, 'mae': 0.00987},
-                'FNN': {'r2_score': 0.86475, 'mse': 1.64336, 'mae': 0.33411},
-                'RBF_SVR': {'r2_score': 0.99599, 'mse': 0.08241, 'mae': 0.09878},
-                'Random Forest': {'r2_score': 0.99734,'mse': 0.04976, 'mae': 0.00655},
-                'XGBoost': {'r2_score': 0.99736, 'mse': 0.05608, 'mae': 0.00649},
-                'LSTM': {'r2_score': 0.99986, 'mse': 2.24043, 'mae': 0.00268},
-                'DNN': {'r2_score': 0.99931, 'mse': 0.00011, 'mae': 0.00784}
-            }
-        result = static_results.get(selected_algorithm, {})
-        r2_score_value = result.get('r2_score')
-        mse_value = result.get('mse')
-        mae_value = result.get('mae')
+            r2_score_value = result.get('r2_score')
+            mse_value = result.get('mse')
+            mae_value = result.get('mae')
+            train_comparison = result.get('train', [])
+            test_comparison = result.get('test', [])
 
-    algorithms = ['CNN', 'SVR', 'FNN', 'RBF_SVR', 'Random Forest', 'XGBoost', 'LSTM', 'DNN']
+            print(f"[DEBUG] Train data length: {len(train_comparison)}")
+            print(f"[DEBUG] Test data length: {len(test_comparison)}")
+            print(f"[DEBUG] Chart will be saved as: {file_key}_train_comparison.png")
 
-  # Generate line plot
-# --- Train Graph ---
-    fig1, ax1 = plt.subplots(figsize=(8, 4))
-    ax1.plot([a for a, _ in train_comparison], label='Train Actual', marker='o')
-    ax1.plot([p for _, p in train_comparison], label='Train Predicted', marker='x')
-    ax1.set_title('Training Data: Actual vs Predicted SoC')
-    ax1.set_xlabel('Sample Index')
-    ax1.set_ylabel('State of Charge (SoC)')
-    ax1.legend()
-    ax1.grid(True)
+        else:
+            # fallback
+            result = static_results.get(selected_algorithm, {})
+            r2_score_value = result.get('r2_score')
+            mse_value = result.get('mse')
+            mae_value = result.get('mae')
+            train_comparison = []
+            test_comparison = []
 
-    train_chart_filename = f'static/images/{selected_algorithm}_train_comparison.png'
-    plt.tight_layout()
-    fig1.savefig(train_chart_filename)
-    plt.close(fig1)
+        # Generate comparison charts if data exists
+        if train_comparison and test_comparison:
+            timestamp = int(time.time())
 
-# --- Test Graph ---
-    fig2, ax2 = plt.subplots(figsize=(8, 4))
-    ax2.plot([a for a, _ in test_comparison], label='Test Actual', marker='o')
-    ax2.plot([p for _, p in test_comparison], label='Test Predicted', marker='x')
-    ax2.set_title('Testing Data: Actual vs Predicted SoC')
-    ax2.set_xlabel('Sample Index')
-    ax2.set_ylabel('State of Charge (SoC)')
-    ax2.legend()
-    ax2.grid(True)
+            # Training chart
+            fig1, ax1 = plt.subplots(figsize=(8, 4))
+            ax1.plot([a for a, _ in train_comparison], label='Train Actual', marker='o')
+            ax1.plot([p for _, p in train_comparison], label='Train Predicted', marker='x')
+            ax1.set_title('Training Data: Actual vs Predicted SoC')
+            ax1.set_xlabel('Sample Index')
+            ax1.set_ylabel('State of Charge (SoC)')
+            ax1.legend()
+            ax1.grid(True)
+            plt.tight_layout()
+            train_path = f'static/images/{file_key}_train_comparison.png'
+            fig1.savefig(train_path)
+            plt.close(fig1)
 
-    test_chart_filename = f'static/images/{selected_algorithm}_test_comparison.png'
-    plt.tight_layout()
-    fig2.savefig(test_chart_filename)
-    plt.close(fig2)
+            # Testing chart
+            fig2, ax2 = plt.subplots(figsize=(8, 4))
+            ax2.plot([a for a, _ in test_comparison], label='Test Actual', marker='o')
+            ax2.plot([p for _, p in test_comparison], label='Test Predicted', marker='x')
+            ax2.set_title('Testing Data: Actual vs Predicted SoC')
+            ax2.set_xlabel('Sample Index')
+            ax2.set_ylabel('State of Charge (SoC)')
+            ax2.legend()
+            ax2.grid(True)
+            plt.tight_layout()
+            test_path = f'static/images/{file_key}_test_comparison.png'
+            fig2.savefig(test_path)
+            plt.close(fig2)
 
+            train_chart_file = f'/static/images/{file_key}_train_comparison.png?t={timestamp}'
+            test_chart_file = f'/static/images/{file_key}_test_comparison.png?t={timestamp}'
 
-    
     return render_template(
-    'algo.html',
-    algorithms=algorithms_results.keys(),
-    selected_algorithm=selected_algorithm,
-    r2_score_value=r2_score_value,
-    mse_value=mse_value,
-    mae_value=mae_value,
-    train_comparison=train_comparison,
-    test_comparison=test_comparison,
-    train_chart_file=train_chart_filename,
-    test_chart_file=test_chart_filename
-)
+        'algo.html',
+        algorithms=algorithms,
+        selected_algorithm=selected_algorithm,
+        r2_score_value=r2_score_value,
+        mse_value=mse_value,
+        mae_value=mae_value,
+        train_comparison=train_comparison,
+        test_comparison=test_comparison,
+        train_chart_file=train_chart_file,
+        test_chart_file=test_chart_file
+    )
 
 
 
