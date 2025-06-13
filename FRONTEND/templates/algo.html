@@ -10,6 +10,7 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav ms-auto py-0">
                 <a href="{{url_for('viewdata')}}" class="nav-item nav-link ">VIEWDATA</a>
+                <a href="{{ url_for('outliers') }}" class="nav-item nav-link active">OUTLIERS</a>
                 <a href="{{url_for('algo')}}" class="nav-item nav-link active">MODEL EVALUATION</a>
                 <a href="{{url_for('prediction1')}}" class="nav-item nav-link">STATE OF BATTERY HEALTH</a>
                 <a href="{{url_for('prediction2')}}" class="nav-item nav-link">PREDICTING STATE OF CHARGE BATTERY</a>
@@ -119,7 +120,16 @@
     </tbody>
   </table> -->
 {% endif %}
-{% if train_chart_file and test_chart_file and selected_algorithm %}
+{% if train_chart_file and test_chart_file and selected_algorithm == 'Random Forest' %}
+  <h4 class="mt-4 text-center"><u>Visual Comparison</u></h4>
+  <div class="text-center">
+    <h3>Training Data: Actual vs Predicted</h3>
+    <img src="{{ url_for('static', filename='images/' + 'random_forest' + '_train_comparison.png') }}" alt="Training Comparison Graph" class="img-fluid">
+    <h3>Testing Data: Actual vs Predicted</h3>
+    <img src="{{ url_for('static', filename='images/' + 'random_forest' + '_test_comparison.png') }}" alt="Testing Comparison Graph" class="img-fluid">
+  </div>
+{% endif %}
+{% if train_chart_file and test_chart_file and selected_algorithm !='Random Forest' %}
   <h4 class="mt-4 text-center"><u>Visual Comparison</u></h4>
   <div class="text-center">
     <h3>Training Data: Actual vs Predicted</h3>

@@ -333,6 +333,18 @@ def prediction1():
 
     return render_template('prediction1.html')
 
+@app.route('/outliers')
+def outliers():
+    # List of boxplot image filenames corresponding to each feature
+    boxplot_files = {
+        "Battery Voltage [V]": 'Battery_Voltage_V_boxplot.png',
+        "Battery Current [A]": 'Battery_Current_A_boxplot.png',
+        "Battery Temperature [°C]": 'Battery_Temperature_°C_boxplot.png',
+        "State of Charge (SoC) [%]": 'SoC_pct_boxplot.png'
+    }
+
+    # Pass this dictionary to the template
+    return render_template('outlier.html', boxplot_files=boxplot_files)
 
 
 @app.route('/prediction2',methods=['GET','POST'])

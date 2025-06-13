@@ -1,0 +1,50 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="container-fluid sticky-top bg-dark bg-light-radial shadow-sm px-5 pe-lg-0">
+  <nav class="navbar navbar-expand-lg bg-dark bg-light-radial navbar-dark py-3 py-lg-0">
+    <a href="#" class="navbar-brand"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"></button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <div class="navbar-nav ms-auto py-0">
+        <a href="{{ url_for('viewdata') }}" class="nav-item nav-link">VIEWDATA</a>
+        <a href="{{ url_for('outliers') }}" class="nav-item nav-link active">OUTLIERS</a>
+        <a href="{{ url_for('algo') }}" class="nav-item nav-link">MODEL EVALUATION</a>
+        <a href="{{ url_for('prediction1') }}" class="nav-item nav-link">STATE OF BATTERY HEALTH</a>
+        <a href="{{ url_for('prediction2') }}" class="nav-item nav-link">PREDICTING STATE OF CHARGE BATTERY</a>
+        <a href="{{ url_for('index') }}" class="nav-item nav-link">LOGOUT</a>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<div class="container mt-5">
+  <h2 class="text-center text-primary mb-4">Outlier Detection (Box + Scatter Plots)</h2>
+
+  {% set plots = [
+    ("Battery Voltage [V]", "Battery_Voltage_V"),
+    ("Battery Current [A]", "Battery_Current_A"),
+    ("Battery Temperature [°C]", "Battery_Temperature_°C"),
+    ("State of Charge (SoC) [%]", "SoC_pct")
+  ] %}
+
+  {% for title, filename in plots %}
+  <div class="mb-5">
+    <h4 class="text-center">{{ title }}</h4>
+    <div class="row justify-content-center">
+      <div class="col-md-6 text-center">
+        <p><strong>Box Plot</strong></p>
+        <img src="{{ url_for('static', filename='images/boxplots/' + filename + '_boxplot.png') }}"
+             alt="{{ title }} Boxplot"
+             class="img-fluid rounded shadow" style="max-width: 500px;">
+      </div>
+      <div class="col-md-6 text-center">
+        <p><strong>Scatter Plot</strong></p>
+        <img src="{{ url_for('static', filename='images/boxplots/' + filename + '_scatter.png') }}"
+             alt="{{ title }} Scatterplot"
+             class="img-fluid rounded shadow" style="max-width: 500px;">
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
